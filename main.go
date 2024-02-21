@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"time"
 
 	"github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
@@ -36,10 +37,26 @@ func main() {
 
 	updates, err := bot.GetUpdatesChan(u)
 
+	messageCount := make(map[int]time.Time)
+
 	for update := range updates {
 		if update.Message == nil {
 			continue
 		}
+
+		userID := update.Message.From.ID
+		lastMsgTime, ok := messageCount[userID]
+		if ok && time.Now().Sub(lastMsgTime) < time.Second*10 {
+			messageCount[userID] = time.Now()
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Заебал флудить урод @"+update.Message.From.UserName)
+			_, err = bot.Send(msg)
+			if err != nil {
+				log.Println(err)
+			}
+			continue
+		}
+
+		messageCount[userID] = time.Now()
 
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
