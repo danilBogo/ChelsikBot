@@ -21,7 +21,7 @@ type App struct {
 }
 
 func NewApp() *App {
-	err := godotenv.Load()
+	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -68,6 +68,7 @@ func getCommands(bot *tgbotapi.BotAPI, pings string) []Command {
 	cmds = append(cmds, commands.NewCsCommand(bot, pings, "cs"))
 	cmds = append(cmds, commands.NewDailyCommand(bot, pings, "daily"))
 	cmds = append(cmds, commands.NewDoCommand(bot, "do"))
+	cmds = append(cmds, commands.NewSmokeCommand(bot, "smoke"))
 
 	return cmds
 }
