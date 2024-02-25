@@ -19,8 +19,8 @@ func NewDoCommand(bot *tgbotapi.BotAPI, command string) *DoCommand {
 	}
 }
 
-func (dc *DoCommand) Execute(chatId int64) {
-	tgMsg := tgbotapi.NewMessage(chatId, doMsg)
+func (dc *DoCommand) Execute(update tgbotapi.Update) {
+	tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, doMsg)
 	_, err := dc.bot.Send(tgMsg)
 	if err != nil {
 		log.Println(err)

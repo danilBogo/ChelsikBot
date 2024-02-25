@@ -11,7 +11,7 @@ import (
 )
 
 type Command interface {
-	Execute(chatId int64)
+	Execute(update tgbotapi.Update)
 	GetCommandName() string
 }
 
@@ -55,7 +55,7 @@ func (a *App) Start() {
 		for _, command := range a.commands {
 			if update.Message.Command() == command.GetCommandName() {
 				if !services.IsMuted(a.bot, update, lastMessageTime) {
-					command.Execute(update.Message.Chat.ID)
+					command.Execute(update)
 				}
 			}
 		}

@@ -19,8 +19,8 @@ func NewTitanicCommand(bot *tgbotapi.BotAPI, command string) *TitanicCommand {
 	}
 }
 
-func (tc *TitanicCommand) Execute(chatId int64) {
-	tgMsg := tgbotapi.NewMessage(chatId, titanicMsg)
+func (tc *TitanicCommand) Execute(update tgbotapi.Update) {
+	tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, titanicMsg)
 	_, err := tc.bot.Send(tgMsg)
 	if err != nil {
 		log.Println(err)

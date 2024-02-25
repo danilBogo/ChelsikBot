@@ -19,8 +19,8 @@ func NewSmokeCommand(bot *tgbotapi.BotAPI, command string) *SmokeCommand {
 	}
 }
 
-func (sc *SmokeCommand) Execute(chatId int64) {
-	tgMsg := tgbotapi.NewMessage(chatId, smokeMsg)
+func (sc *SmokeCommand) Execute(update tgbotapi.Update) {
+	tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, smokeMsg)
 	_, err := sc.bot.Send(tgMsg)
 	if err != nil {
 		log.Println(err)

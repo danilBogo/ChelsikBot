@@ -27,9 +27,9 @@ func NewDailyCommand(bot *tgbotapi.BotAPI, pings, command string) *DailyCommand 
 	}
 }
 
-func (dc *DailyCommand) Execute(chatId int64) {
+func (dc *DailyCommand) Execute(update tgbotapi.Update) {
 	msg := fmt.Sprintf(dailyMsg, dc.pings)
-	tgMsg := tgbotapi.NewMessage(chatId, msg)
+	tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, msg)
 	_, err := dc.bot.Send(tgMsg)
 	if err != nil {
 		log.Println(err)

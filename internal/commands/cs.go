@@ -24,9 +24,9 @@ func NewCsCommand(bot *tgbotapi.BotAPI, pings, command string) *CsCommand {
 	}
 }
 
-func (cc *CsCommand) Execute(chatId int64) {
+func (cc *CsCommand) Execute(update tgbotapi.Update) {
 	msg := fmt.Sprintf(csMsg, cc.pings)
-	tgMsg := tgbotapi.NewMessage(chatId, msg)
+	tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, msg)
 	_, err := cc.bot.Send(tgMsg)
 	if err != nil {
 		log.Println(err)
