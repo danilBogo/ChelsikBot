@@ -21,7 +21,13 @@ func NewFuckYouCommand(bot *tgbotapi.BotAPI, command string) *FuckYouCommand {
 }
 
 func (fyc *FuckYouCommand) Execute(update tgbotapi.Update) {
-	msg := fmt.Sprintf(fuckYouMsg, update.Message.ReplyToMessage.From.UserName)
+	var msg string
+	if update.Message.ReplyToMessage != nil {
+		msg = fmt.Sprintf(fuckYouMsg, update.Message.ReplyToMessage.From.UserName)
+	} else {
+		msg = fmt.Sprintf(fuckYouMsg, update.Message.From.UserName)
+	}
+
 	tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, msg)
 	_, err := fyc.bot.Send(tgMsg)
 	if err != nil {
