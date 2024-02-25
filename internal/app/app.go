@@ -70,6 +70,7 @@ func getCommands(bot *tgbotapi.BotAPI, pings string) []Command {
 	cmds = append(cmds, commands.NewDoCommand(bot, "do"))
 	cmds = append(cmds, commands.NewSmokeCommand(bot, "smoke"))
 	cmds = append(cmds, commands.NewTitanicCommand(bot, "titanic"))
+	cmds = append(cmds, commands.NewFuckYouCommand(bot, "fuckyou"))
 
 	return cmds
 }
