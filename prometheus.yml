@@ -1,0 +1,5 @@
+﻿scrape_configs:
+  - job_name: 'bot'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['bot:8080']
