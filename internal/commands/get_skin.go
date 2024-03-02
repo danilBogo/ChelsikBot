@@ -10,16 +10,18 @@ import (
 const (
 	invalidArguments = "@%s еблуша введи полное или частичное название кейса"
 	drop             = `
+%s
 @%s
 %s
 %s
-Уровень редкости: %s
+%s
 `
 	dropWithPhase = `
+%s
 @%s
 %s
 %s
-Уровень редкости: %s
+%s
 %s
 `
 )
@@ -62,9 +64,9 @@ func (dc *SkinCommand) Execute(update tgbotapi.Update) {
 
 	var caption string
 	if skin.Phase == nil {
-		caption = fmt.Sprintf(drop, update.Message.From.UserName, skin.Case, skin.Name, skin.Rarity)
+		caption = fmt.Sprintf(drop, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Rarity)
 	} else {
-		caption = fmt.Sprintf(dropWithPhase, update.Message.From.UserName, skin.Case, skin.Name, skin.Rarity, skin.Phase)
+		caption = fmt.Sprintf(dropWithPhase, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Phase, skin.Rarity)
 	}
 
 	file := tgbotapi.FileBytes{

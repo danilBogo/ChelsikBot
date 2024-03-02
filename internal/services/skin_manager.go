@@ -14,14 +14,14 @@ import (
 const (
 	url               = "https://bymykel.github.io/CSGO-API/api/ru/crates/cases.json"
 	rareId            = "rarity_rare_weapon"
-	rareName          = "синее"
+	rareName          = "💙💙💙💙💙💙💙💙💙💙"
 	mythicalId        = "rarity_mythical_weapon"
-	mythicalName      = "фиолетовое"
+	mythicalName      = "💜💜💜💜💜💜💜💜💜💜"
 	legendaryId       = "rarity_legendary_weapon"
-	legendaryName     = "розовое"
+	legendaryName     = "\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77"
 	ancientId         = "rarity_ancient_weapon"
-	ancientNameWeapon = "красное"
-	ancientNameKnife  = "золотое"
+	ancientNameWeapon = "❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️"
+	ancientNameKnife  = "💛💛💛💛💛💛💛💛💛💛"
 )
 
 type SkinManager struct {
