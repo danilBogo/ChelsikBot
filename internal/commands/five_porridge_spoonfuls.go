@@ -7,7 +7,7 @@ import (
 	"log"
 )
 
-const fivePorridgeSpoonfulsRootDir = "../files/voices/five-porridge-spoonfuls"
+const fivePorridgeSpoonfulsRootDir = "../files/voices/five_porridge_spoonfuls"
 
 type FivePorridgeSpoonfulsCommand struct {
 	bot     *tgbotapi.BotAPI
