@@ -7,6 +7,7 @@ import (
 )
 
 const fuckYouMsg = "@%s пошел нахуй"
+const fuckYouBotMsg = "@%s ахуел чурка блять? Сам пошел нахуй"
 
 type FuckYouCommand struct {
 	bot     *tgbotapi.BotAPI
@@ -23,7 +24,11 @@ func NewFuckYouCommand(bot *tgbotapi.BotAPI, command string) *FuckYouCommand {
 func (fyc *FuckYouCommand) Execute(update tgbotapi.Update) {
 	var msg string
 	if update.Message.ReplyToMessage != nil {
-		msg = fmt.Sprintf(fuckYouMsg, update.Message.ReplyToMessage.From.UserName)
+		if update.Message.ReplyToMessage.From.IsBot {
+			msg = fmt.Sprintf(fuckYouBotMsg, update.Message.From.UserName)
+		} else {
+			msg = fmt.Sprintf(fuckYouMsg, update.Message.ReplyToMessage.From.UserName)
+		}
 	} else {
 		msg = fmt.Sprintf(fuckYouMsg, update.Message.From.UserName)
 	}
