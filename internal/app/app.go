@@ -16,8 +16,9 @@ type Command interface {
 }
 
 type App struct {
-	bot      *tgbotapi.BotAPI
-	commands []Command
+	bot             *tgbotapi.BotAPI
+	commands        []Command
+	telegramManager *services.TelegramManager
 }
 
 func NewApp() *App {
@@ -50,9 +51,12 @@ func NewApp() *App {
 
 	cmds := getCommands(bot, pings)
 
+	telegramManager := services.NewTelegramManager(bot)
+
 	return &App{
-		bot:      bot,
-		commands: cmds,
+		bot:             bot,
+		commands:        cmds,
+		telegramManager: telegramManager,
 	}
 }
 
@@ -71,7 +75,7 @@ func (a *App) Start() {
 
 		for _, command := range a.commands {
 			if update.Message.Command() == command.GetCommandName() {
-				if !services.IsMuted(a.bot, update, lastMessageTime) {
+				if !a.telegramManager.IsMuted(update, lastMessageTime) {
 					command.Execute(update)
 				}
 			}
