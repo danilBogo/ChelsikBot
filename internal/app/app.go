@@ -21,8 +21,14 @@ type App struct {
 }
 
 func NewApp() *App {
-	log.Println(os.Getwd())
-	err := godotenv.Load("../.env")
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(wd)
+
+	err = godotenv.Load("../.env")
 	if err != nil {
 		log.Print("Error loading .env file")
 	}
