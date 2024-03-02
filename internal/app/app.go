@@ -4,7 +4,6 @@ import (
 	"ChelsikBot/internal/commands"
 	"ChelsikBot/internal/services"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
-	"github.com/joho/godotenv"
 	"log"
 	"os"
 	"time"
@@ -21,11 +20,11 @@ type App struct {
 }
 
 func NewApp() *App {
-	log.Println(os.Getwd())
-	err := godotenv.Load("../.env")
-	if err != nil {
-		log.Print("Error loading .env file")
-	}
+	//log.Println(os.Getwd())
+	//err := godotenv.Load("../.env")
+	//if err != nil {
+	//	log.Print("Error loading .env file")
+	//}
 
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if len(token) == 0 {
