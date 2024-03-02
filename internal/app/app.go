@@ -19,6 +19,7 @@ type App struct {
 	bot             *tgbotapi.BotAPI
 	commands        []Command
 	telegramManager *services.TelegramManager
+	voiceManager    *services.VoiceManager
 }
 
 func NewApp() *App {
@@ -53,10 +54,13 @@ func NewApp() *App {
 
 	telegramManager := services.NewTelegramManager(bot)
 
+	voiceManager := services.NewVoiceManager()
+
 	return &App{
 		bot:             bot,
 		commands:        cmds,
 		telegramManager: telegramManager,
+		voiceManager:    voiceManager,
 	}
 }
 

@@ -7,6 +7,12 @@ import (
 	"path/filepath"
 )
 
+type VoiceManager struct{}
+
+func NewVoiceManager() *VoiceManager {
+	return &VoiceManager{}
+}
+
 func GetRandomVoiceBytes(rootDir string) []byte {
 	var files []string
 
