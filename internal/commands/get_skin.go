@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	invalidArguments = "%s еблуша введи полное или частичное название кейсы"
+	invalidArguments = "@%s еблуша введи полное или частичное название кейсы"
 	drop             = `
 @%s
 %s
@@ -39,7 +39,7 @@ func NewSkinCommand(bot *tgbotapi.BotAPI, command string) *SkinCommand {
 func (dc *SkinCommand) Execute(update tgbotapi.Update) {
 	caseName := update.Message.CommandArguments()
 	if len(caseName) == 0 {
-		tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, invalidArguments)
+		tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(invalidArguments, update.Message.From.UserName))
 		_, err := dc.bot.Send(tgMsg)
 		if err != nil {
 			log.Println(err)
