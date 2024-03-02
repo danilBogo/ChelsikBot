@@ -8,14 +8,16 @@ import (
 )
 
 const (
-	invalidArguments = "@%s еблуша введи полное или частичное название кейсы"
+	invalidArguments = "@%s еблуша введи полное или частичное название кейса"
 	drop             = `
 @%s
+%s
 %s
 Уровень редкости: %s
 `
 	dropWithPhase = `
 @%s
+%s
 %s
 Уровень редкости: %s
 %s
@@ -60,12 +62,17 @@ func (dc *SkinCommand) Execute(update tgbotapi.Update) {
 
 	var caption string
 	if skin.Phase == nil {
-		caption = fmt.Sprintf(drop, update.Message.From.UserName, skin.Name, skin.Rarity)
+		caption = fmt.Sprintf(drop, update.Message.From.UserName, skin.Case, skin.Name, skin.Rarity)
 	} else {
-		caption = fmt.Sprintf(dropWithPhase, update.Message.From.UserName, skin.Name, skin.Rarity, skin.Phase)
+		caption = fmt.Sprintf(dropWithPhase, update.Message.From.UserName, skin.Case, skin.Name, skin.Rarity, skin.Phase)
 	}
 
-	photoConfig := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, skin.Image)
+	file := tgbotapi.FileBytes{
+		Name:  "photo.png",
+		Bytes: skin.Image,
+	}
+
+	photoConfig := tgbotapi.NewPhotoUpload(update.Message.Chat.ID, file)
 	photoConfig.Caption = caption
 
 	_, err = dc.bot.Send(photoConfig)

@@ -3,6 +3,7 @@ package services
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
 	"math/rand"
 	"net/http"
@@ -59,15 +60,15 @@ type Rarity struct {
 	ID string `json:"id"`
 }
 
-type ResultSkin struct {
+type SkinDto struct {
 	Name   string
 	Rarity string
 	Phase  any
-	Image  string
+	Image  []byte
 	Case   string
 }
 
-func (sm *SkinManager) GetSkin(partCaseName string) (*ResultSkin, error) {
+func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
 	caseId, err := sm.findCaseIdByPartName(partCaseName)
 	if err != nil {
 		return nil, err
@@ -80,11 +81,22 @@ func (sm *SkinManager) GetSkin(partCaseName string) (*ResultSkin, error) {
 		return nil, err
 	}
 
-	resultSkin := ResultSkin{
+	resp, err := http.Get(skin.Image)
+	if err != nil {
+		log.Fatal("Error executing the GET request:", err)
+	}
+	defer resp.Body.Close()
+
+	fileBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatal("Error reading file contents:", err)
+	}
+
+	resultSkin := SkinDto{
 		Name:   skin.Name,
 		Rarity: convertSkinTypeToName(skinType, isKnife),
 		Phase:  skin.Phase,
-		Image:  skin.Image,
+		Image:  fileBytes,
 		Case:   sm.cases[caseId].Name,
 	}
 
