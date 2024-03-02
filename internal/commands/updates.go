@@ -12,6 +12,7 @@ New:
 Updated:
 - changed response when sending /fuckyou to reply to bot message
 - added automatic push to docker hub via github workflow
+- remove mute in private conversation
 `
 
 type UpdatesCommand struct {
