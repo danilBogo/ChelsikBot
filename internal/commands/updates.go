@@ -6,8 +6,9 @@ import (
 )
 
 const updatesMsg = `
+02.03.2024
 New:
-- added commands /demqq, /niggersgays, /niggersnotgays, /skin, /updates
+- added commands /demqq, /niggersgays, /niggersnotgays, /skin, /updates, /grunt, /fiveporridgespoonfuls
 Updated:
 - changed response when sending /fuckyou to reply to bot message
 - added automatic push to docker hub via github workflow
