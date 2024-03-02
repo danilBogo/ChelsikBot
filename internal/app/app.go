@@ -79,7 +79,7 @@ func (a *App) Start() {
 
 		for _, command := range a.commands {
 			if update.Message.Command() == command.GetCommandName() {
-				if !a.telegramManager.IsMuted(update, lastMessageTime) {
+				if update.Message.Chat.IsPrivate() || !a.telegramManager.IsMuted(update, lastMessageTime) {
 					command.Execute(update)
 				}
 			}
