@@ -93,6 +93,8 @@ func getCommands(bot *tgbotapi.BotAPI, pings string) []Command {
 	cmds = append(cmds, commands.NewNiggersNotGaysCommand(bot, "niggersnotgays"))
 	cmds = append(cmds, commands.NewSkinCommand(bot, "skin"))
 	cmds = append(cmds, commands.NewUpdatesCommand(bot, "updates"))
+	cmds = append(cmds, commands.NewGruntCommand(bot, "grunt"))
+	cmds = append(cmds, commands.NewFivePorridgeSpoonfulsCommand(bot, "fiveporridgespoonfuls"))
 
 	return cmds
 }
