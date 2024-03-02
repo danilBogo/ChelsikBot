@@ -68,6 +68,10 @@ type SkinDto struct {
 	Case   string
 }
 
+type CaseDto struct {
+	Name string
+}
+
 func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
 	caseId, err := sm.findCaseIdByPartName(partCaseName)
 	if err != nil {
@@ -101,6 +105,15 @@ func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
 	}
 
 	return &resultSkin, nil
+}
+
+func (sm *SkinManager) GetCases() []CaseDto {
+	var cases []CaseDto
+	for _, c := range sm.cases {
+		cases = append(cases, CaseDto{Name: c.Name})
+	}
+
+	return cases
 }
 
 func (sm *SkinManager) findCaseIdByPartName(partName string) (int, error) {
