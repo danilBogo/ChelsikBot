@@ -27,12 +27,22 @@ func NewApp() *App {
 		log.Print("Error loading .env file")
 	}
 
-	bot, err := tgbotapi.NewBotAPI(os.Getenv("TELEGRAM_BOT_TOKEN"))
+	token := os.Getenv("TELEGRAM_BOT_TOKEN")
+	if len(token) == 0 {
+		log.Fatal("TELEGRAM_BOT_TOKEN not found")
+	}
+
+	bot, err := tgbotapi.NewBotAPI(token)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	cmds := getCommands(bot, os.Getenv("PINGS"))
+	pings := os.Getenv("PINGS")
+	if len(pings) == 0 {
+		log.Fatal("PINGS not found")
+	}
+
+	cmds := getCommands(bot, pings)
 
 	return &App{
 		bot:      bot,
