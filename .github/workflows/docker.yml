@@ -19,10 +19,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push Docker image
+      - name: Build Docker image with secrets
         run: |
           TELEGRAM_BOT_TOKEN="${{ secrets.TELEGRAM_BOT_TOKEN }}"
           PINGS="${{ secrets.PINGS }}"
-          
+
           docker build -t danilbogo/chelsikbot --build-arg TELEGRAM_BOT_TOKEN="$TELEGRAM_BOT_TOKEN" --build-arg PINGS="$PINGS" .
+
+      - name: Push Docker image
+        run: |
           docker push danilbogo/chelsikbot
