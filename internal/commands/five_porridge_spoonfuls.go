@@ -4,6 +4,7 @@ import (
 	"ChelsikBot/internal/services"
 	"bytes"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/google/uuid"
 	"log"
 )
 
@@ -23,7 +24,7 @@ func NewFivePorridgeSpoonfulsCommand(bot *tgbotapi.BotAPI, command string) *Five
 
 func (dc *FivePorridgeSpoonfulsCommand) Execute(update tgbotapi.Update) {
 	fileBytes := services.GetRandomVoiceBytes(fivePorridgeSpoonfulsRootDir)
-	msg := tgbotapi.NewVoiceUpload(update.Message.Chat.ID, tgbotapi.FileReader{Name: "voice_message.ogg", Reader: bytes.NewReader(fileBytes), Size: -1})
+	msg := tgbotapi.NewVoiceUpload(update.Message.Chat.ID, tgbotapi.FileReader{Name: uuid.New().String() + ".ogg", Reader: bytes.NewReader(fileBytes), Size: -1})
 	_, err := dc.bot.Send(msg)
 	if err != nil {
 		log.Println(err)

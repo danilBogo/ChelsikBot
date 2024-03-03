@@ -4,6 +4,7 @@ import (
 	"ChelsikBot/internal/services"
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	"github.com/google/uuid"
 	"log"
 )
 
@@ -70,7 +71,7 @@ func (dc *SkinCommand) Execute(update tgbotapi.Update) {
 	}
 
 	file := tgbotapi.FileBytes{
-		Name:  "photo.png",
+		Name:  uuid.New().String() + ".png",
 		Bytes: skin.Image,
 	}
 
