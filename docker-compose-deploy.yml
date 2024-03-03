@@ -30,3 +30,5 @@ services:
     
 volumes:
   grafana-storage:
+  
+#  rm -f docker-compose.yml && curl -L https://pastebin.com/hszUDju4 -o docker-compose.yml
