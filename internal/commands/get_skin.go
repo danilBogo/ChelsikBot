@@ -16,10 +16,14 @@ const (
 %s
 %s
 %s
+%s
+%s
 `
 	dropWithPhase = `
 %s
 @%s
+%s
+%s
 %s
 %s
 %s
@@ -65,9 +69,9 @@ func (dc *SkinCommand) Execute(update tgbotapi.Update) {
 
 	var caption string
 	if skin.Phase == nil {
-		caption = fmt.Sprintf(drop, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Rarity)
+		caption = fmt.Sprintf(drop, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Pattern, skin.Float, skin.Rarity)
 	} else {
-		caption = fmt.Sprintf(dropWithPhase, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Phase, skin.Rarity)
+		caption = fmt.Sprintf(dropWithPhase, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Phase, skin.Pattern, skin.Float, skin.Rarity)
 	}
 
 	file := tgbotapi.FileBytes{

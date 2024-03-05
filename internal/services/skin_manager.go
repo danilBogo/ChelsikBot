@@ -12,16 +12,18 @@ import (
 )
 
 const (
-	url               = "https://bymykel.github.io/CSGO-API/api/ru/crates/cases.json"
+	url               = "https://bymykel.github.io/CSGO-API/api/en/crates/cases.json"
 	rareId            = "rarity_rare_weapon"
 	rareName          = "💙💙💙💙💙💙💙💙💙💙"
 	mythicalId        = "rarity_mythical_weapon"
 	mythicalName      = "💜💜💜💜💜💜💜💜💜💜"
 	legendaryId       = "rarity_legendary_weapon"
 	legendaryName     = "\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77\U0001FA77"
-	ancientId         = "rarity_ancient_weapon"
+	ancientWeaponId   = "rarity_ancient_weapon"
 	ancientNameWeapon = "❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️"
 	ancientNameKnife  = "💛💛💛💛💛💛💛💛💛💛"
+	ancientGloveId    = "rarity_ancient"
+	ancientNameGlove  = "💛💛💛💛💛💛💛💛💛💛"
 )
 
 type SkinManager struct {
@@ -46,7 +48,7 @@ func NewSkinManager() *SkinManager {
 type Case struct {
 	Name    string `json:"name"`
 	Weapons []Skin `json:"contains"`
-	Knifes  []Skin `json:"contains_rare"`
+	Rares   []Skin `json:"contains_rare"`
 	Image   string `json:"image"`
 }
 type Skin struct {
@@ -61,11 +63,13 @@ type Rarity struct {
 }
 
 type SkinDto struct {
-	Name   string
-	Rarity string
-	Phase  any
-	Image  []byte
-	Case   string
+	Name    string
+	Rarity  string
+	Phase   any
+	Image   []byte
+	Case    string
+	Pattern string
+	Float   string
 }
 
 type CaseDto struct {
@@ -78,9 +82,9 @@ func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
 		return nil, err
 	}
 
-	skinType, isKnife := getSkinType()
+	skinType, isRare := getSkinType()
 
-	skin, err := sm.getSkin(caseId, skinType, isKnife)
+	skin, err := sm.getSkin(caseId, skinType, isRare)
 	if err != nil {
 		return nil, err
 	}
@@ -97,11 +101,13 @@ func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
 	}
 
 	resultSkin := SkinDto{
-		Name:   skin.Name,
-		Rarity: convertSkinTypeToName(skinType, isKnife),
-		Phase:  skin.Phase,
-		Image:  fileBytes,
-		Case:   sm.cases[caseId].Name,
+		Name:    skin.Name,
+		Rarity:  convertSkinTypeToName(skin.Rarity.ID, isRare),
+		Phase:   skin.Phase,
+		Image:   fileBytes,
+		Case:    sm.cases[caseId].Name,
+		Pattern: strconv.Itoa(rand.Int() % 1001),
+		Float:   strconv.FormatFloat(getFloat(skin.Rarity.ID), 'f', 3, 64),
 	}
 
 	return &resultSkin, nil
@@ -135,15 +141,15 @@ func (sm *SkinManager) findCaseIdByPartName(partName string) (int, error) {
 	return maxMatchId, nil
 }
 
-func (sm *SkinManager) getSkin(caseId int, skinType string, isKnife bool) (*Skin, error) {
+func (sm *SkinManager) getSkin(caseId int, skinType string, isRare bool) (*Skin, error) {
 	c := sm.cases[caseId]
-	if isKnife {
-		count := len(c.Knifes)
+	if isRare {
+		count := len(c.Rares)
 		if count == 0 {
 			return nil, errors.New("Нулевое количество ножей у кейса с id=" + strconv.Itoa(caseId))
 		}
 		randNum := rand.Int() % count
-		return &c.Knifes[randNum], nil
+		return &c.Rares[randNum], nil
 	}
 
 	skins := sm.getSkins(caseId, skinType)
@@ -171,9 +177,9 @@ func getSkinType() (string, bool) {
 	randNum := rand.Int() % 10000
 	switch {
 	case randNum >= 0 && randNum < 26:
-		return ancientId, true
+		return ancientWeaponId, true
 	case randNum >= 26 && randNum < 90:
-		return ancientId, false
+		return ancientWeaponId, false
 	case randNum >= 90 && randNum < 400:
 		return legendaryId, false
 	case randNum >= 400 && randNum < 2000:
@@ -183,12 +189,14 @@ func getSkinType() (string, bool) {
 	}
 }
 
-func convertSkinTypeToName(skinType string, isKnife bool) string {
+func convertSkinTypeToName(skinType string, isRare bool) string {
 	switch {
-	case skinType == ancientId && isKnife:
+	case skinType == ancientWeaponId && isRare:
 		return ancientNameKnife
-	case skinType == ancientId:
+	case skinType == ancientWeaponId:
 		return ancientNameWeapon
+	case skinType == ancientGloveId:
+		return ancientNameGlove
 	case skinType == legendaryId:
 		return legendaryName
 	case skinType == mythicalId:
@@ -200,4 +208,12 @@ func convertSkinTypeToName(skinType string, isKnife bool) string {
 
 func normalize(str string) string {
 	return strings.ToLower(strings.ReplaceAll(str, "ё", "е"))
+}
+
+func getFloat(skinType string) float64 {
+	if skinType == ancientGloveId {
+		return float64(rand.Int()%940+60) / 1000
+	}
+
+	return float64(rand.Int()%1000) / 1000
 }

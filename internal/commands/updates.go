@@ -18,6 +18,10 @@ New:
 - added metrics bot_requests_total, bot_requests_total_command, bot_requests_total_user_command, bot_requests_success_command, bot_requests_success_user_command, bot_request_duration_seconds
 - added prometheus
 - added graphana
+05.03.2024
+New:
+- added pattern, float
+- changed language to english
 `
 
 type UpdatesCommand struct {
