@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	url               = "https://bymykel.github.io/CSGO-API/api/en/crates/cases.json"
+	url               = "https://bymykel.github.io/CSGO-API/api/ru/crates/cases.json"
 	rareId            = "rarity_rare_weapon"
 	rareName          = "💙💙💙💙💙💙💙💙💙💙"
 	mythicalId        = "rarity_mythical_weapon"

@@ -23,7 +23,6 @@ New:
 05.03.2024
 New:
 - added pattern, float
-- changed language to english
 `
 
 type UpdatesCommand struct {
