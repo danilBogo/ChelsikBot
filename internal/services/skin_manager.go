@@ -7,12 +7,18 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"slices"
 	"strconv"
 	"strings"
 )
 
 const (
-	url               = "https://bymykel.github.io/CSGO-API/api/ru/crates/cases.json"
+	casesUrl          = "https://bymykel.github.io/CSGO-API/api/ru/crates/cases.json"
+	collectionsUrl    = "https://bymykel.github.io/CSGO-API/api/ru/collections.json"
+	commonId          = "rarity_common_weapon"
+	commonName        = "\U0001FA76\U0001FA76\U0001FA76\U0001FA76\U0001FA76\U0001FA76\U0001FA76\U0001FA76\U0001FA76\U0001FA76"
+	uncommonId        = "rarity_uncommon_weapon"
+	uncommonName      = "\U0001FA75\U0001FA75\U0001FA75\U0001FA75\U0001FA75\U0001FA75\U0001FA75\U0001FA75\U0001FA75\U0001FA75"
 	rareId            = "rarity_rare_weapon"
 	rareName          = "💙💙💙💙💙💙💙💙💙💙"
 	mythicalId        = "rarity_mythical_weapon"
@@ -27,30 +33,64 @@ const (
 )
 
 type SkinManager struct {
-	cases []Case
+	sets            []Set
+	CasesName       []string
+	CollectionsName []string
 }
 
 func NewSkinManager() *SkinManager {
-	response, err := http.Get(url)
+	casesResponse, err := http.Get(casesUrl)
 	if err != nil {
 		log.Fatal("Error executing the GET request:", err)
 	}
-	defer response.Body.Close()
+	defer casesResponse.Body.Close()
 
-	var cases []Case
-	if err := json.NewDecoder(response.Body).Decode(&cases); err != nil {
+	var cases []Set
+	if err := json.NewDecoder(casesResponse.Body).Decode(&cases); err != nil {
 		log.Fatal("Error decoding JSON:", err)
 	}
 
-	return &SkinManager{cases: cases}
+	casesNames := make([]string, len(cases))
+	for id, c := range cases {
+		casesNames[id] = c.Name
+	}
+
+	collectionsResponse, err := http.Get(collectionsUrl)
+	if err != nil {
+		log.Fatal("Error executing the GET request:", err)
+	}
+	defer collectionsResponse.Body.Close()
+
+	var collections []Set
+	if err := json.NewDecoder(collectionsResponse.Body).Decode(&collections); err != nil {
+		log.Fatal("Error decoding JSON:", err)
+	}
+
+	var collectionsWithoutAgentsAndGraffiti []Set
+	for _, c := range collections {
+		if strings.Contains(strings.ToLower(c.Name), "коллекция") &&
+			!strings.Contains(strings.ToLower(c.Name), "граффити") {
+			collectionsWithoutAgentsAndGraffiti = append(collectionsWithoutAgentsAndGraffiti, c)
+		}
+	}
+
+	collectionsNames := make([]string, len(collectionsWithoutAgentsAndGraffiti))
+	for id, c := range collectionsWithoutAgentsAndGraffiti {
+		collectionsNames[id] = c.Name
+	}
+
+	sets := slices.Concat(cases, collectionsWithoutAgentsAndGraffiti)
+
+	return &SkinManager{sets: sets, CasesName: casesNames, CollectionsName: collectionsNames}
 }
 
-type Case struct {
+type Set struct {
 	Name    string `json:"name"`
 	Weapons []Skin `json:"contains"`
 	Rares   []Skin `json:"contains_rare"`
 	Image   string `json:"image"`
 }
+
 type Skin struct {
 	Name   string `json:"name"`
 	Rarity Rarity `json:"rarity"`
@@ -67,26 +107,29 @@ type SkinDto struct {
 	Rarity  string
 	Phase   any
 	Image   []byte
-	Case    string
+	Set     string
 	Pattern string
 	Float   string
 }
 
-type CaseDto struct {
-	Name string
-}
-
 func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
-	caseId, err := sm.findCaseIdByPartName(partCaseName)
+	setId, err := sm.findSetIdByPartName(partCaseName)
 	if err != nil {
 		return nil, err
 	}
 
-	skinType, isRare := getSkinType()
-
-	skin, err := sm.getSkin(caseId, skinType, isRare)
-	if err != nil {
-		return nil, err
+	var skinType string
+	var isRare bool
+	var skin *Skin
+	if strings.Contains(strings.ToLower(sm.sets[setId].Name), "коллекция") {
+		skinType = getCollectionSkinType()
+		skin = sm.getCollectionSkin(setId, skinType, isRare)
+	} else {
+		skinType, isRare = getCaseSkinType()
+		skin, err = sm.getSkin(setId, skinType, isRare)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	resp, err := http.Get(skin.Image)
@@ -105,7 +148,7 @@ func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
 		Rarity:  convertSkinTypeToName(skin.Rarity.ID, isRare),
 		Phase:   skin.Phase,
 		Image:   fileBytes,
-		Case:    sm.cases[caseId].Name,
+		Set:     sm.sets[setId].Name,
 		Pattern: strconv.Itoa(rand.Int() % 1001),
 		Float:   strconv.FormatFloat(getFloat(skin.Rarity.ID), 'f', 3, 64),
 	}
@@ -113,20 +156,11 @@ func (sm *SkinManager) GetSkin(partCaseName string) (*SkinDto, error) {
 	return &resultSkin, nil
 }
 
-func (sm *SkinManager) GetCases() []CaseDto {
-	var cases []CaseDto
-	for _, c := range sm.cases {
-		cases = append(cases, CaseDto{Name: c.Name})
-	}
-
-	return cases
-}
-
-func (sm *SkinManager) findCaseIdByPartName(partName string) (int, error) {
+func (sm *SkinManager) findSetIdByPartName(partName string) (int, error) {
 	maxMatchId := -1
 	maxMatchCount := 0
 
-	for id, c := range sm.cases {
+	for id, c := range sm.sets {
 		matchCount := strings.Count(normalize(c.Name), normalize(partName))
 		if matchCount > maxMatchCount {
 			maxMatchId = id
@@ -135,36 +169,48 @@ func (sm *SkinManager) findCaseIdByPartName(partName string) (int, error) {
 	}
 
 	if maxMatchId == -1 {
-		return 0, errors.New("Кейс не найден")
+		return 0, errors.New("Кейс или коллекция не найдены")
 	}
 
 	return maxMatchId, nil
 }
 
-func (sm *SkinManager) getSkin(caseId int, skinType string, isRare bool) (*Skin, error) {
-	c := sm.cases[caseId]
+func (sm *SkinManager) getCollectionSkin(setId int, skinType string, isRare bool) *Skin {
+	currentSkinType := skinType
+	for {
+		skin, err := sm.getSkin(setId, currentSkinType, isRare)
+		if err == nil {
+			return skin
+		}
+
+		currentSkinType = getCollectionSkinType()
+	}
+}
+
+func (sm *SkinManager) getSkin(setId int, skinType string, isRare bool) (*Skin, error) {
+	c := sm.sets[setId]
 	if isRare {
 		count := len(c.Rares)
 		if count == 0 {
-			return nil, errors.New("Нулевое количество ножей у кейса с id=" + strconv.Itoa(caseId))
+			return nil, errors.New("Нулевое количество ножей у кейса с id=" + strconv.Itoa(setId))
 		}
 		randNum := rand.Int() % count
 		return &c.Rares[randNum], nil
 	}
 
-	skins := sm.getSkins(caseId, skinType)
+	skins := sm.getSkins(setId, skinType)
 	count := len(skins)
 	if count == 0 {
-		return nil, errors.New("Нулевое количество скинов типа " + skinType + " у кейса с id=" + strconv.Itoa(caseId))
+		return nil, errors.New("Нулевое количество скинов типа " + skinType + " у кейса с id=" + strconv.Itoa(setId))
 	}
 
 	randNum := rand.Int() % count
 	return &skins[randNum], nil
 }
 
-func (sm *SkinManager) getSkins(caseId int, skinType string) []Skin {
+func (sm *SkinManager) getSkins(setId int, skinType string) []Skin {
 	var skins []Skin
-	for _, s := range sm.cases[caseId].Weapons {
+	for _, s := range sm.sets[setId].Weapons {
 		if s.Rarity.ID == skinType {
 			skins = append(skins, s)
 		}
@@ -173,7 +219,7 @@ func (sm *SkinManager) getSkins(caseId int, skinType string) []Skin {
 	return skins
 }
 
-func getSkinType() (string, bool) {
+func getCaseSkinType() (string, bool) {
 	randNum := rand.Int() % 10000
 	switch {
 	case randNum >= 0 && randNum < 26:
@@ -189,6 +235,24 @@ func getSkinType() (string, bool) {
 	}
 }
 
+func getCollectionSkinType() string {
+	randNum := rand.Int() % 10000
+	switch {
+	case randNum >= 0 && randNum < 5:
+		return ancientWeaponId
+	case randNum >= 5 && randNum < 26:
+		return legendaryId
+	case randNum >= 26 && randNum < 124:
+		return mythicalId
+	case randNum >= 124 && randNum < 545:
+		return rareId
+	case randNum >= 545 && randNum < 2353:
+		return uncommonId
+	default:
+		return commonId
+	}
+}
+
 func convertSkinTypeToName(skinType string, isRare bool) string {
 	switch {
 	case skinType == ancientWeaponId && isRare:
@@ -201,13 +265,27 @@ func convertSkinTypeToName(skinType string, isRare bool) string {
 		return legendaryName
 	case skinType == mythicalId:
 		return mythicalName
-	default:
+	case skinType == rareId:
 		return rareName
+	case skinType == uncommonId:
+		return uncommonName
+	default:
+		return commonName
 	}
 }
 
 func normalize(str string) string {
-	return strings.ToLower(strings.ReplaceAll(str, "ё", "е"))
+	remove := "«»\"'"
+
+	filter := func(r rune) rune {
+		if strings.ContainsRune(remove, r) {
+			return -1
+		}
+		return r
+	}
+
+	result := strings.Map(filter, str)
+	return strings.ToLower(strings.ReplaceAll(result, "ё", "е"))
 }
 
 func getFloat(skinType string) float64 {

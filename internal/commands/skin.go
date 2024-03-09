@@ -46,8 +46,8 @@ func NewSkinCommand(bot *tgbotapi.BotAPI, command string) *SkinCommand {
 }
 
 func (dc *SkinCommand) Execute(update tgbotapi.Update) {
-	caseName := update.Message.CommandArguments()
-	if len(caseName) == 0 {
+	setName := update.Message.CommandArguments()
+	if len(setName) == 0 {
 		tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, fmt.Sprintf(invalidArguments, update.Message.From.UserName))
 		_, err := dc.bot.Send(tgMsg)
 		if err != nil {
@@ -56,7 +56,7 @@ func (dc *SkinCommand) Execute(update tgbotapi.Update) {
 		return
 	}
 
-	skin, err := dc.skinManager.GetSkin(caseName)
+	skin, err := dc.skinManager.GetSkin(setName)
 	if err != nil {
 		log.Println(err)
 		tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, err.Error())
@@ -69,9 +69,9 @@ func (dc *SkinCommand) Execute(update tgbotapi.Update) {
 
 	var caption string
 	if skin.Phase == nil {
-		caption = fmt.Sprintf(drop, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Pattern, skin.Float, skin.Rarity)
+		caption = fmt.Sprintf(drop, skin.Rarity, update.Message.From.UserName, skin.Set, skin.Name, skin.Pattern, skin.Float, skin.Rarity)
 	} else {
-		caption = fmt.Sprintf(dropWithPhase, skin.Rarity, update.Message.From.UserName, skin.Case, skin.Name, skin.Phase, skin.Pattern, skin.Float, skin.Rarity)
+		caption = fmt.Sprintf(dropWithPhase, skin.Rarity, update.Message.From.UserName, skin.Set, skin.Name, skin.Phase, skin.Pattern, skin.Float, skin.Rarity)
 	}
 
 	file := tgbotapi.FileBytes{

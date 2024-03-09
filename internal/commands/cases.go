@@ -22,11 +22,10 @@ func NewCasesCommand(bot *tgbotapi.BotAPI, command string) *CasesCommand {
 }
 
 func (dc *CasesCommand) Execute(update tgbotapi.Update) {
-	cases := dc.skinManager.GetCases()
 	strBuilder := strings.Builder{}
-	lastValueIndex := len(cases) - 1
-	for id, c := range cases {
-		strBuilder.WriteString(c.Name)
+	lastValueIndex := len(dc.skinManager.CasesName) - 1
+	for id, name := range dc.skinManager.CasesName {
+		strBuilder.WriteString(name)
 		if id != lastValueIndex {
 			strBuilder.WriteString(" ; ")
 		}
