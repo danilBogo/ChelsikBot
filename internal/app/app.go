@@ -1,49 +1,16 @@
 package app
 
 import (
+	"ChelsikBot/internal/app/metrics"
 	"ChelsikBot/internal/commands"
 	"ChelsikBot/internal/services"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/joho/godotenv"
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	"os"
 	"time"
-)
-
-var (
-	totalRequestsCounter = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "bot_requests_total",
-		Help: "Total requests number",
-	})
-
-	totalCommandCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "bot_requests_total_command",
-		Help: "Number of total command requests",
-	}, []string{"command"})
-
-	totalUserCommandCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "bot_requests_total_user_command",
-		Help: "Number of total user command requests",
-	}, []string{"username", "command"})
-
-	successCommandCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "bot_requests_success_command",
-		Help: "Number of success command requests",
-	}, []string{"command"})
-
-	successUserCommandCounter = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: "bot_requests_success_user_command",
-		Help: "Number of success user command requests",
-	}, []string{"username", "command"})
-
-	requestDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-		Name:    "bot_request_duration_seconds",
-		Help:    "Histogram of the bot request duration in seconds",
-		Buckets: prometheus.DefBuckets,
-	}, []string{"command"})
 )
 
 type Command interface {
@@ -92,13 +59,6 @@ func NewApp() *App {
 
 	voiceManager := services.NewVoiceManager()
 
-	prometheus.MustRegister(totalRequestsCounter)
-	prometheus.MustRegister(totalCommandCounter)
-	prometheus.MustRegister(totalUserCommandCounter)
-	prometheus.MustRegister(successCommandCounter)
-	prometheus.MustRegister(successUserCommandCounter)
-	prometheus.MustRegister(requestDuration)
-
 	return &App{
 		bot:             bot,
 		commands:        cmds,
@@ -113,7 +73,7 @@ func (a *App) Start() {
 
 	updates, _ := a.bot.GetUpdatesChan(u)
 
-	lastMessageTime := make(map[int]time.Time)
+	lastMessageTime := make(map[int]*services.MuteInfo)
 
 	http.Handle("/metrics", promhttp.Handler())
 	go func() {
@@ -126,19 +86,19 @@ func (a *App) Start() {
 	for update := range updates {
 		go func(update tgbotapi.Update) {
 			start := time.Now()
-			totalRequestsCounter.Inc()
+			metrics.TotalRequestsCounter.Inc()
 
 			if update.Message == nil || !update.Message.IsCommand() {
 				return
 			}
 
-			totalCommandCounter.WithLabelValues(update.Message.Command()).Inc()
-			totalUserCommandCounter.WithLabelValues(update.Message.From.UserName, update.Message.Command()).Inc()
+			metrics.TotalCommandCounter.WithLabelValues(update.Message.Command()).Inc()
+			metrics.TotalUserCommandCounter.WithLabelValues(update.Message.From.UserName, update.Message.Command()).Inc()
 
 			for _, command := range a.commands {
 				if update.Message.Command() == command.GetCommandName() {
-					successCommandCounter.WithLabelValues(update.Message.Command()).Inc()
-					successUserCommandCounter.WithLabelValues(update.Message.From.UserName, update.Message.Command()).Inc()
+					metrics.SuccessCommandCounter.WithLabelValues(update.Message.Command()).Inc()
+					metrics.SuccessUserCommandCounter.WithLabelValues(update.Message.From.UserName, update.Message.Command()).Inc()
 					if update.Message.Chat.IsPrivate() || !a.telegramManager.IsMuted(update, lastMessageTime) {
 						command.Execute(update)
 						break
@@ -147,7 +107,7 @@ func (a *App) Start() {
 			}
 
 			duration := time.Since(start).Seconds()
-			requestDuration.WithLabelValues(update.Message.Command()).Observe(duration)
+			metrics.RequestDuration.WithLabelValues(update.Message.Command()).Observe(duration)
 		}(update)
 	}
 }

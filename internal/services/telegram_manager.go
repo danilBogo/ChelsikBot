@@ -7,6 +7,8 @@ import (
 	"time"
 )
 
+const muteDuration = 5
+
 type TelegramManager struct {
 	bot *tgbotapi.BotAPI
 }
@@ -15,20 +17,55 @@ func NewTelegramManager(bot *tgbotapi.BotAPI) *TelegramManager {
 	return &TelegramManager{bot: bot}
 }
 
-func (tm *TelegramManager) IsMuted(update tgbotapi.Update, lastMessageTime map[int]time.Time) bool {
+type MuteInfo struct {
+	lastMsgTime    time.Time
+	warningMsgSent bool
+}
+
+func (tm *TelegramManager) IsMuted(update tgbotapi.Update, lastMessageTime map[int]*MuteInfo) bool {
 	userID := update.Message.From.ID
-	lastMsgTime, ok := lastMessageTime[userID]
-	if ok && time.Now().Sub(lastMsgTime) < time.Second*5 {
-		lastMessageTime[userID] = time.Now()
-		msg := fmt.Sprintf("@%s заебал флудить урод", update.Message.From.UserName)
-		tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, msg)
-		_, err := tm.bot.Send(tgMsg)
+	muteInfo, ok := lastMessageTime[userID]
+	if ok && time.Now().Sub(muteInfo.lastMsgTime) < time.Second*5 {
+		muteInfo.lastMsgTime = time.Now()
+
+		deleteConfig := tgbotapi.DeleteMessageConfig{
+			ChatID:    update.Message.Chat.ID,
+			MessageID: update.Message.MessageID,
+		}
+
+		_, err := tm.bot.DeleteMessage(deleteConfig)
 		if err != nil {
 			log.Println(err)
+
+			msg := fmt.Sprintf("@%s заебал флудить урод", update.Message.From.UserName)
+			tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, msg)
+			_, err := tm.bot.Send(tgMsg)
+			if err != nil {
+				log.Println(err)
+			}
+
+			return true
 		}
+
+		if !muteInfo.warningMsgSent {
+			msg := fmt.Sprintf("@%s отъехал в мут на %d секунд", update.Message.From.UserName, muteDuration)
+			tgMsg := tgbotapi.NewMessage(update.Message.Chat.ID, msg)
+			_, err = tm.bot.Send(tgMsg)
+			if err != nil {
+				log.Println(err)
+			}
+
+			muteInfo.warningMsgSent = true
+		}
+
 		return true
 	} else {
-		lastMessageTime[userID] = time.Now()
+		if !ok {
+			lastMessageTime[userID] = &MuteInfo{lastMsgTime: time.Now(), warningMsgSent: false}
+		} else {
+			muteInfo.lastMsgTime = time.Now()
+			muteInfo.warningMsgSent = false
+		}
 		return false
 	}
 }
