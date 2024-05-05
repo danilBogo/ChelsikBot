@@ -26,17 +26,7 @@ type App struct {
 }
 
 func NewApp() *App {
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println(wd)
-
-	err = godotenv.Load("../.env")
-	if err != nil {
-		log.Print("Error loading .env file")
-	}
+	loadEnv()
 
 	token := os.Getenv("TELEGRAM_BOT_TOKEN")
 	if len(token) == 0 {
@@ -48,15 +38,8 @@ func NewApp() *App {
 		log.Fatal(err)
 	}
 
-	pings := os.Getenv("PINGS")
-	if len(pings) == 0 {
-		log.Fatal("PINGS not found")
-	}
-
-	cmds := getCommands(bot, pings)
-
+	cmds := getCommands(bot)
 	telegramManager := services.NewTelegramManager(bot)
-
 	voiceManager := services.NewVoiceManager()
 
 	return &App{
@@ -112,7 +95,26 @@ func (a *App) Start() {
 	}
 }
 
-func getCommands(bot *tgbotapi.BotAPI, pings string) []Command {
+func loadEnv() {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println(wd)
+
+	err = godotenv.Load("../.env")
+	if err != nil {
+		log.Print("Error loading .env file")
+	}
+}
+
+func getCommands(bot *tgbotapi.BotAPI) []Command {
+	pings := os.Getenv("PINGS")
+	if len(pings) == 0 {
+		log.Fatal("PINGS not found")
+	}
+
 	cmds := make([]Command, 0)
 
 	cmds = append(cmds, commands.NewCsCommand(bot, pings, "cs"))
