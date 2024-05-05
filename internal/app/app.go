@@ -95,6 +95,11 @@ func (a *App) Start() {
 	}
 }
 
+func (a *App) Health() bool {
+	_, err := a.bot.GetMe()
+	return err == nil
+}
+
 func loadEnv() {
 	wd, err := os.Getwd()
 	if err != nil {
