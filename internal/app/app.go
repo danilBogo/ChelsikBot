@@ -128,12 +128,9 @@ func getCommands(bot *tgbotapi.BotAPI) []Command {
 	cmds = append(cmds, commands.NewSmokeCommand(bot, "smoke"))
 	cmds = append(cmds, commands.NewTitanicCommand(bot, "titanic"))
 	cmds = append(cmds, commands.NewFuckYouCommand(bot, "fuckyou"))
-	cmds = append(cmds, commands.NewNiggersGaysCommand(bot, "niggersgays"))
-	cmds = append(cmds, commands.NewNiggersNotGaysCommand(bot, "niggersnotgays"))
 	cmds = append(cmds, commands.NewUpdatesCommand(bot, "updates"))
 	cmds = append(cmds, commands.NewGruntCommand(bot, "grunt"))
 	cmds = append(cmds, commands.NewFivePorridgeSpoonfulsCommand(bot, "fiveporridgespoonfuls"))
-	cmds = append(cmds, commands.NewFaceitCommand(bot, "faceit"))
 
 	return cmds
 }
