@@ -23,6 +23,7 @@ type App struct {
 	commands        []Command
 	telegramManager *services.TelegramManager
 	voiceManager    *services.VoiceManager
+	binanceManager  *services.BinanceManager
 }
 
 func NewApp() *App {
@@ -38,7 +39,8 @@ func NewApp() *App {
 		log.Fatal(err)
 	}
 
-	cmds := getCommands(bot)
+	binanceManager := services.NewBinanceManager()
+	cmds := getCommands(bot, binanceManager)
 	telegramManager := services.NewTelegramManager(bot)
 	voiceManager := services.NewVoiceManager()
 
@@ -47,6 +49,7 @@ func NewApp() *App {
 		commands:        cmds,
 		telegramManager: telegramManager,
 		voiceManager:    voiceManager,
+		binanceManager:  binanceManager,
 	}
 }
 
@@ -114,7 +117,7 @@ func loadEnv() {
 	}
 }
 
-func getCommands(bot *tgbotapi.BotAPI) []Command {
+func getCommands(bot *tgbotapi.BotAPI, binanceManager *services.BinanceManager) []Command {
 	pings := os.Getenv("PINGS")
 	if len(pings) == 0 {
 		log.Fatal("PINGS not found")
@@ -131,6 +134,8 @@ func getCommands(bot *tgbotapi.BotAPI) []Command {
 	cmds = append(cmds, commands.NewUpdatesCommand(bot, "updates"))
 	cmds = append(cmds, commands.NewGruntCommand(bot, "grunt"))
 	cmds = append(cmds, commands.NewFivePorridgeSpoonfulsCommand(bot, "fiveporridgespoonfuls"))
+	cmds = append(cmds, commands.NewMentionCommand(bot, pings, "mention"))
+	cmds = append(cmds, commands.NewTonCommand(bot, binanceManager, "mention"))
 
 	return cmds
 }
