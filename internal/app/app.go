@@ -134,6 +134,7 @@ func getCommands(bot *tgbotapi.BotAPI, binanceManager *services.BinanceManager) 
 	cmds = append(cmds, commands.NewFivePorridgeSpoonfulsCommand(bot, "fiveporridgespoonfuls"))
 	cmds = append(cmds, commands.NewMentionCommand(bot, pings, "mention"))
 	cmds = append(cmds, commands.NewTonCommand(bot, binanceManager, "ton"))
+	cmds = append(cmds, commands.NewInviteCommand(bot, "invite"))
 
 	return cmds
 }
