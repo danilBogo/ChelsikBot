@@ -6,9 +6,9 @@ import (
 )
 
 const updatesMsg = `
-12.10.2024
+23.10.2024
 New:
-- removed obsolete commands
+- add command invite
 `
 
 type UpdatesCommand struct {
